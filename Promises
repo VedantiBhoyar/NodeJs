@@ -1,0 +1,104 @@
+# JavaScript Promises (Quick Guide)
+
+A **Promise** in JavaScript represents a value that may be available now, later, or never. It's used for asynchronous operations.
+
+## Promise States:
+
+* **Pending**: Initial state.
+* **Fulfilled**: Operation completed successfully.
+* **Rejected**: Operation failed.
+
+---
+
+## Basic Syntax:
+
+
+const promise = new Promise((resolve, reject) => {
+  // async operation
+  if (success) {
+    resolve('Success!');
+  } else {
+    reject('Error!');
+  }
+});
+
+promise
+  .then(result => console.log(result))
+  .catch(error => console.error(error));
+
+---
+
+## `Promise.all()`
+
+Waits for **all** promises to resolve. If any fail, it rejects.
+
+const p1 = Promise.resolve(1);
+const p2 = Promise.resolve(2);
+const p3 = Promise.resolve(3);
+
+Promise.all([p1, p2, p3])
+  .then(values => console.log(values)) // [1, 2, 3]
+  .catch(error => console.error(error));
+
+---
+
+## `Promise.any()`
+
+Returns the **first fulfilled** promise. Ignores rejections unless all fail.
+
+const p1 = Promise.reject('Error 1');
+const p2 = Promise.resolve('Success');
+const p3 = Promise.reject('Error 3');
+
+Promise.any([p1, p2, p3])
+  .then(value => console.log(value)) // "Success"
+  .catch(error => console.error(error));
+
+
+---
+
+## `Promise.allSettled()`
+
+Waits for **all promises** to finish, regardless of result.
+
+```js
+const p1 = Promise.resolve('Success');
+const p2 = Promise.reject('Fail');
+
+Promise.allSettled([p1, p2])
+  .then(results => console.log(results));
+/*
+[
+  { status: 'fulfilled', value: 'Success' },
+  { status: 'rejected', reason: 'Fail' }
+]
+*/
+```
+
+---
+
+## `Promise.race()`
+
+Returns the result of the **first promise** to settle (resolve or reject).
+
+
+const p1 = new Promise(resolve => setTimeout(resolve, 100, 'One'));
+const p2 = new Promise(resolve => setTimeout(resolve, 50, 'Two'));
+
+Promise.race([p1, p2])
+  .then(value => console.log(value)); // "Two"
+
+---
+
+## Summary Table:
+
+| Method               | Resolves When                   | Rejects When                     |
+| -------------------- | ------------------------------- | -------------------------------- |
+| `Promise.all`        | All succeed                     | Any fails                        |
+| `Promise.any`        | First success                   | All fail                         |
+| `Promise.allSettled` | All settle (fulfilled/rejected) | Never rejects                    |
+| `Promise.race`       | First settles                   | If first settled promise rejects |
+
+---
+
+> 📌 Use promises to simplify async code and avoid callback hell.
