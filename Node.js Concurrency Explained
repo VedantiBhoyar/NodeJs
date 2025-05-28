@@ -1,0 +1,146 @@
+🔹 What Does "Single-Threaded" Mean?
+Node.js uses a single thread to run JavaScript code — this is called the main thread.
+
+Unlike languages like Java or C# that use multiple threads to handle multiple requests, Node.js relies on non-blocking asynchronous I/O and an event loop.
+
+🔹 Then How Does Node.js Handle Multiple Requests?
+Node.js handles concurrency using:
+
+Event Loop
+
+Callback Queue
+
+Worker Threads (libuv Thread Pool)
+
+So, even with a single thread for JavaScript execution, Node.js can handle thousands of concurrent requests without creating a thread for each.
+
+🔹 Key Concepts
+1. Event Loop
+The event loop is the heart of Node.js concurrency.
+
+It continuously checks:
+
+Is the main thread free?
+
+Are there callbacks waiting to be run?
+
+Are there pending I/O operations?
+
+The event loop handles async callbacks like setTimeout, file reads, database queries, etc.
+
+2. Callback Queue
+When an async operation (like file read or HTTP request) is completed, its callback is pushed to the callback queue, and the event loop will pick it when the main thread is free.
+
+3. libuv Thread Pool
+Node.js offloads heavy I/O or CPU tasks to a thread pool under the hood (managed by the libuv library), e.g.:
+
+File system operations
+
+DNS lookups
+
+Crypto operations
+
+By default, this thread pool has 4 threads.
+
+🔸 Code Examples with Explanation
+Let’s walk through examples to understand this better:
+
+✅ Example 1: Fast Async Response (Non-blocking)
+
+const http = require('http');
+
+http.createServer((req, res) => {
+  if (req.url === '/fast') {
+    res.end('Fast response!');
+  }
+}).listen(3000);
+This response is fast.
+
+The event loop immediately processes it.
+
+No blocking or waiting.
+
+⏳ Example 2: setTimeout (Async Delay)
+
+if (req.url === '/delay') {
+  setTimeout(() => {
+    res.end('Delayed response (3s)');
+  }, 3000);
+}
+setTimeout registers a timer and exits.
+
+The callback is queued after 3s.
+
+In the meantime, the event loop can handle other requests.
+
+✅ No blocking.
+
+❌ Example 3: Blocking Code (Bad Practice)
+
+if (req.url === '/block') {
+  const start = Date.now();
+  while (Date.now() - start < 3000) {}
+  res.end('Blocked for 3s!');
+}
+This blocks the main thread for 3 seconds.
+
+No other requests can be served during this time.
+
+🚫 Bad for scalability.
+
+🔐 Example 4: Crypto CPU-Heavy Task (Using Worker Pool)
+
+const crypto = require('crypto');
+
+if (req.url === '/hash') {
+  crypto.pbkdf2('password', 'salt', 100000, 64, 'sha512', () => {
+    res.end('Crypto done!');
+  });
+}
+This CPU-intensive task is offloaded to libuv thread pool.
+
+Event loop remains free to handle other requests.
+
+✅ Efficient handling of CPU tasks.
+
+📂 Example 5: Asynchronous File Read
+
+const fs = require('fs');
+
+if (req.url === '/file') {
+  fs.readFile('server.js', 'utf8', (err, data) => {
+    res.end('File read done!');
+  });
+}
+File read is async and offloaded to the thread pool.
+
+When done, the callback is queued.
+
+✅ Main thread is not blocked.
+
+🔸 Diagram: Node.js Event Loop Concurrency
+
+ ┌───────────────┐
+ │   Incoming    │
+ │   Requests    │
+ └─────┬─────────┘
+       ↓
+ ┌───────────────┐
+ │   Event Loop  │
+ └─────┬─────────┘
+       ↓
+ ┌───────────────┐        ┌───────────────┐
+ │ Callback Queue│ <───── │ Async Tasks   │
+ └───────────────┘        └───────────────┘
+       ↓
+ ┌───────────────┐
+ │  Main Thread  │ → executes JS
+ └───────────────┘
+
+
+🚀 Conclusion
+Node.js is single-threaded but highly concurrent.
+
+It uses non-blocking I/O, event loop, and thread pool to serve many requests simultaneously.
+
+Avoid blocking the main thread to maintain scalability.
