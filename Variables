@@ -1,0 +1,88 @@
+🔹 1. Scope
+🔹 2. Re-declaration
+🔹 3. Hoisting
+🔹 4. Mutability
+🔹 5. Use Cases
+🔹 6. Practical Exercises
+
+1. Scope (Where variable is accessible)
+
+function testScope() {
+  if (true) {
+    var a = 10; // function-scoped
+    let b = 20; // block-scoped
+    const c = 30; // block-scoped
+  }
+
+  console.log(a); // ✅ 10
+  console.log(b); // ❌ ReferenceError
+  console.log(c); // ❌ ReferenceError
+}
+
+testScope();
+
+
+Keyword	          Scope Type
+var	              Function scope
+let	              Block scope {}
+const	            Block scope {}
+
+
+2.Re-declaration
+
+var x = 1;
+var x = 2; // ✅ Allowed
+
+let y = 1;
+// let y = 2; // ❌ SyntaxError
+
+const z = 1;
+// const z = 2; // ❌ SyntaxError
+
+Keyword	Can Redeclare in Same Scope?
+var	          ✅ Yes
+let	          ❌ No
+const	        ❌ No
+
+
+
+3. Hoisting (Declared before use)
+
+console.log(a); // ✅ undefined (hoisted)
+var a = 10;
+
+console.log(b); // ❌ ReferenceError
+let b = 20;
+
+console.log(c); // ❌ ReferenceError
+const c = 30;
+
+
+
+
+4. Mutability (Can change value?)
+
+let a = 10;
+a = 20; // ✅ Works
+
+const b = 30;
+// b = 40; // ❌ TypeError (cannot reassign const)
+
+const obj = { name: "A" };
+obj.name = "B"; // ✅ Allowed: object contents can be changed
+
+
+5. Use Cases
+
+Use var when... (rarely used now)
+You need function-level scoping
+For old code or compatibility
+
+Use let when...
+The value will change
+You need block-level scope
+
+Use const when...
+The value should not change
+You’re declaring constants or config
+
