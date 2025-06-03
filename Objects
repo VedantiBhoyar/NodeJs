@@ -1,0 +1,139 @@
+// JavaScript Objects
+
+// 1. Creating Objects
+
+// Object literal syntax
+const person1 = {
+  name: "Vedanti",
+  age: 13,
+  isDev: true
+};
+
+// Using the Object constructor
+const car = new Object();
+car.brand = "Toyota";
+
+// Constructor function to create multiple similar objects
+function Person(name, age) {
+  this.name = name;
+  this.age = age;
+}
+const p1 = new Person("Ananya", 24);
+
+// Using ES6 class syntax to define a blueprint
+class PersonClass {
+  constructor(name, age) {
+    this.name = name;
+    this.age = age;
+  }
+}
+const p2 = new PersonClass("Ravi", 25);
+
+// 2. Accessing Properties
+
+// Dot notation
+console.log(person1.name);       
+
+// Bracket notation (useful for dynamic keys)
+console.log(person1["age"]);     
+
+// 3. Modifying and Deleting Properties
+
+// Updating a property value
+person1.name = "Riya";
+
+// Deleting a property
+delete person1.age;
+
+// 4. Looping through Objects
+
+// Using for...in to iterate over keys
+for (let key in person1) {
+  console.log(key, person1[key]);
+}
+
+// Object utility methods
+const objLoop = { a: 1, b: 2 };
+
+// Get all keys
+console.log(Object.keys(objLoop));    
+
+// Get all values
+console.log(Object.values(objLoop));  
+
+// Get all entries (key-value pairs as arrays)
+console.log(Object.entries(objLoop)); 
+
+// 5. Object Methods
+
+// Object.assign merges properties from source to target
+const target = { a: 1 };
+const source = { b: 2 };
+const merged = Object.assign(target, source);
+console.log(merged);
+
+// Object.freeze makes object immutable
+const frozen = Object.freeze({ name: "Ananya" });
+frozen.name = "Riya"; // This won't work
+
+// Object.seal allows modifying properties but not adding/removing
+const sealed = Object.seal({ name: "Ananya" });
+sealed.name = "Riya"; // Allowed
+// delete sealed.name; // Not allowed
+
+// Object.create creates a new object with the given prototype
+const proto = {
+  greet() {
+    console.log("Hi");
+  }
+};
+const objWithProto = Object.create(proto);
+objWithProto.greet(); // Inherits greet method
+
+// Check if a property exists directly on the object
+const hasOwn = { a: 1 };
+console.log(hasOwn.hasOwnProperty("a"));
+
+// Convert entries array back to object
+const entries = [["name", "Ananya"], ["age", 24]];
+const fromEntries = Object.fromEntries(entries);
+console.log(fromEntries);
+
+// 6. Destructuring
+
+// Extract properties into variables
+const person2 = { name: "Ananya", age: 24 };
+const { name, age } = person2;
+
+// 7. Spread and Rest
+
+// Spread: clone object and add new properties
+const user = { name: "Ananya", age: 24 };
+const user2 = { ...user, location: "India" };
+
+// Rest: extract remaining properties
+const { name: n, ...rest } = user;
+console.log(rest); // { age: 24 }
+
+// 8. Optional Chaining and Nullish Coalescing
+
+const user3 = { address: { city: "Delhi" } };
+
+// Optional chaining: safely access nested properties
+console.log(user3?.address?.city); // "Delhi"
+
+// Nullish coalescing: provide fallback if null or undefined
+const nameFallback = user3.name ?? "Guest";
+console.log(nameFallback); // "Guest"
+
+// 9. Practice Example: Convert Object to Array and Back
+
+const sample = { x: 1, y: 2 };
+
+// Convert object to array of key-value pairs
+const entriesArray = Object.entries(sample);
+console.log(entriesArray); // [ ['x', 1], ['y', 2] ]
+
+// Convert back to object
+const backToObject = Object.fromEntries(entriesArray);
+console.log(backToObject); // { x: 1, y: 2 }
