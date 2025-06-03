@@ -1,0 +1,81 @@
+What is a Map?
+A Map is a collection of key-value pairs where keys can be of any data type. It maintains the insertion order of entries.
+
+const map = new Map();
+
+🔑 Key Features
+Ordered: Iteration follows the insertion order.
+
+Any type as key: Unlike objects, keys can be objects, functions, or any primitive.
+
+Size: Easily get size using .size.
+
+Direct iteration: With .forEach() or for..of.
+
+🚀 Basic Operations
+
+const map = new Map();
+
+// Set values
+map.set('name', 'John');
+map.set(42, 'The answer');
+map.set(true, 'Boolean value');
+
+// Get values
+console.log(map.get('name')); // 'John'
+
+// Check existence
+console.log(map.has(42)); // true
+
+// Delete a key
+map.delete(true);
+
+// Map size
+console.log(map.size); // 2
+
+// Clear the map
+map.clear();
+
+🔁 Iteration
+
+const map = new Map([
+  ['a', 1],
+  ['b', 2],
+]);
+
+for (const [key, value] of map) {
+  console.log(`${key} => ${value}`);
+}
+
+map.forEach((value, key) => {
+  console.log(`${key} maps to ${value}`);
+});
+
+🆚 Map vs Object
+
+Feature	           Map	                                         Object
+Key Types	         Any	                                        String/Symbol only
+Order	             Ordered	                                    Unordered
+Size	            .size	                                        Manual count
+Iteration	        Iterable by default                           Use Object.keys/values()
+Performance	      Better for frequent adds/deletes	            Good for static structure
+
+🛠 Useful Methods
+
+Method	Description
+.set(key, val)	Adds or updates a key-value pair
+.get(key)	Returns value for given key
+.has(key)	Returns boolean if key exists
+.delete(key)	Removes the entry for given key
+.clear()	Removes all entries
+.keys()	Returns iterator for keys
+.values()	Returns iterator for values
+.entries()	Returns iterator for [key, value] pairs
+
+📦 Use Cases
+Caching (e.g., memoization)
+
+Lookup tables with non-string keys
+
+Maintaining insertion order of dynamic entries
+
