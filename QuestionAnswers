@@ -1,0 +1,193 @@
+1.Explain the Node.js Event Loop. How does it enable non-blocking I/O, and what are its key phases?
+
+Node.js is a runtime environment used to run JavaScript outside the browser, built on the V8 engine. It has an event-driven, non-blocking architecture, which is achieved with the help of the Event Loop.
+The Event Loop continuously checks whether the call stack is empty. Once it is empty, it takes callbacks from the appropriate queue and pushes them into the call stack for execution.
+
+There are different types of queues based on the phases of the Event Loop:
+Timers → handles callbacks from setTimeout and setInterval.
+Pending Callbacks → executes some I/O callbacks deferred from the previous loop (e.g., TCP errors).
+Idle/Prepare → internal phase used by Node.js (not usually relevant for applications).
+Poll → executes most I/O callbacks, such as database queries, file reads, or API calls. It also checks for new incoming requests.
+Check → executes callbacks from setImmediate().
+Close Callbacks → executes cleanup tasks, such as socket.on('close').
+
+Apart from these, there are two types of task queues:
+Macrotask queue → corresponds to the event loop phases above (timers, I/O, setImmediate, close callbacks).
+Microtask queue → used for Promise callbacks and process.nextTick(). Microtasks are executed immediately after the current operation, before moving to the next phase. In Node.js, process.nextTick() has higher priority than promises and runs before all other microtasks.
+
+This design allows Node.js to efficiently perform non-blocking I/O while running on a single thread.
+
+
+2.Differentiate between process.nextTick(), setImmediate(), and setTimeout(fn, 0). When would you use each, and what are their execution order implications?
+
+process.nextTick()
+Queues a callback to be executed immediately after the current operation completes, before the event loop continues.
+Runs before any I/O events or timers.
+Use it when you want to run something asynchronously but before the event loop continues, e.g., after a function execution but before I/O.
+
+setImmediate()
+Queues a callback to be executed in the check phase of the next iteration of the event loop.
+It runs after I/O events.
+Useful for scheduling callbacks after I/O operations.
+
+setTimeout(fn, 0)
+Queues a callback to run in the timers phase after at least 0 ms.
+Not guaranteed to run immediately; depends on the minimum timer granularity and the current event loop load.
+Use it when you want to defer execution but allow other I/O or process.nextTick() callbacks to run first.
+
+Execution Order:
+
+process.nextTick(() => console.log("process.nextTick callback"));
+setImmediate(() => console.log("setImmediate callback"));
+setTimeout(() => console.log("setTimeout callback"), 0);
+
+
+Expected Output:
+
+process.nextTick callback
+setTimeout callback
+setImmediate callback
+
+
+Explanation of Execution Order:
+
+process.nextTick() runs first, immediately after the current script.
+setTimeout(fn, 0) runs in the timers phase of the next loop iteration.
+setImmediate() runs in the check phase, after timers and I/O events.
+
+⚠️ Note: If these are scheduled inside an I/O callback, setImmediate() may run before setTimeout(fn, 0) because timers are checked before the check phase only if the timers are already expired. 
+So the order can vary depending on context.
+
+
+const fs = require('fs');
+
+process.nextTick(() => {
+    console.log('Next Tick Callback');
+});
+
+
+fs.readFile(__filename, () => {
+    console.log('File Read Callback');
+    setImmediate(() => {
+        console.log('Set Immediate Callback');
+    });
+
+    setTimeout(() => {
+        console.log('Timeout Callback');
+    }, 0);
+});
+
+
+Expected Output:
+
+process.nextTick callback
+File Read Callback
+setImmediate callback
+setTimeout callback
+
+3. Compare and contrast Callbacks, Promises, and Async/Await for handling asynchronous operations. Provide examples of when each is appropriate.
+
+a. Callbacks
+
+Definition:
+A callback is a function passed as an argument to another function, which is executed after an asynchronous operation completes.
+
+Example:
+
+const fs = require('fs');
+
+fs.readFile('file.txt', 'utf8', (err, data) => {
+    if (err) {
+        console.error('Error:', err);
+    } else {
+        console.log('File content:', data);
+    }
+});
+
+
+Pros:
+
+Simple and straightforward for single async operations.
+Widely supported in older codebases.
+
+Cons:
+
+Callback hell: Nested callbacks become hard to read and maintain.
+Hard to handle errors consistently across multiple operations.
+
+When to use:
+Simple, one-off asynchronous tasks.
+Maintaining legacy code that already uses callbacks.
+
+b. Promises
+
+Definition:
+A Promise represents the eventual result (or failure) of an asynchronous operation. Promises allow chaining and avoid deeply nested callbacks.
+
+Example:
+
+const fs = require('fs').promises;
+
+fs.readFile('file.txt', 'utf8')
+  .then(data => {
+    console.log('File content:', data);
+    return "Next operation";
+  })
+  .then(msg => console.log(msg))
+  .catch(err => console.error('Error:', err));
+
+
+Pros:
+
+Avoids callback hell.
+Supports chaining multiple async operations.
+Better error handling with .catch().
+Integrates with modern JavaScript APIs.
+
+Cons:
+
+Slightly more complex than callbacks.
+Still needs .then chains which can become long.
+
+When to use:
+Multiple asynchronous operations in sequence or parallel.
+Newer codebases; most modern APIs use Promises.
+
+3. Async/Await
+
+Definition:
+Async/Await is syntactic sugar over Promises that allows writing asynchronous code like synchronous code, improving readability.
+
+Example:
+
+const fs = require('fs').promises;
+
+async function readFile() {
+    try {
+        const data = await fs.readFile('file.txt', 'utf8');
+        console.log('File content:', data);
+    } catch (err) {
+        console.error('Error:', err);
+    }
+}
+
+readFile();
+
+
+Pros:
+
+Clean, linear code flow.
+Easier to read and debug than chained Promises.
+Works well with try/catch for error handling.
+
+Cons:
+Must be used inside an async function.
+Still depends on Promises under the hood.
+Sequential awaits can be slower if operations could run in parallel.
+
+When to use:
+
+Complex asynchronous workflows.
+Sequential operations that need readability.
+Modern JavaScript development (Node.js 8+ or browsers with ES2017+).
+
