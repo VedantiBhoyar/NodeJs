@@ -17,6 +17,8 @@ Microtask queue → used for Promise callbacks and process.nextTick(). Microtask
 
 This design allows Node.js to efficiently perform non-blocking I/O while running on a single thread.
 
+..............................................................................
+
 
 2.Differentiate between process.nextTick(), setImmediate(), and setTimeout(fn, 0). When would you use each, and what are their execution order implications?
 
@@ -84,6 +86,8 @@ process.nextTick callback
 File Read Callback
 setImmediate callback
 setTimeout callback
+
+..............................................................................
 
 3. Compare and contrast Callbacks, Promises, and Async/Await for handling asynchronous operations. Provide examples of when each is appropriate.
 
@@ -153,7 +157,7 @@ When to use:
 Multiple asynchronous operations in sequence or parallel.
 Newer codebases; most modern APIs use Promises.
 
-3. Async/Await
+c. Async/Await
 
 Definition:
 Async/Await is syntactic sugar over Promises that allows writing asynchronous code like synchronous code, improving readability.
@@ -190,4 +194,453 @@ When to use:
 Complex asynchronous workflows.
 Sequential operations that need readability.
 Modern JavaScript development (Node.js 8+ or browsers with ES2017+).
+
+
+..............................................................................
+
+4.Module System & Package Management
+
+a. Module System in Node.js
+
+Node.js allows developers to split their code into modules so it’s easier to organize, reuse, and maintain.
+
+Types of Modules
+
+Core (Built-in) Modules
+Provided by Node.js itself (no installation required).
+
+Example:
+
+const fs = require("fs"); // File system module
+const http = require("http"); // HTTP server module
+
+
+Local (User-defined) Modules
+Custom modules you create in your project.
+
+Example:
+
+// math.js
+function add(a, b) { return a + b; }
+module.exports = { add };
+
+// app.js
+const math = require("./math");
+console.log(math.add(2, 3));
+
+
+Third-Party Modules
+Installed via npm (Node Package Manager).
+
+Example:
+
+npm install express
+
+const express = require("express");
+const app = express();
+
+Module Formats
+
+CommonJS (CJS) – Default in Node.js
+
+const fs = require("fs");   // import
+module.exports = myFunc;    // export
+
+
+ES Modules (ESM) – Modern JavaScript style
+To use, enable "type": "module" in package.json.
+
+import fs from "fs";       // import
+export function myFunc(){} // export
+
+b. Package Management in Node.js
+
+Node.js uses npm (Node Package Manager) or yarn/pnpm to manage packages.
+
+Key Concepts
+
+npm init → Creates package.json (project metadata + dependencies).
+
+npm install <package> → Installs a dependency.
+
+"dependencies" → required for production (e.g., express, mongoose).
+
+"devDependencies" → required only for development (e.g., nodemon, jest).
+
+node_modules → folder where installed packages live.
+
+package-lock.json → locks package versions for consistent installs.
+
+
+..............................................................................
+
+
+5.Differentiate between CommonJS and ES Modules (ESM) in Node.js. When would you use one over the other?
+
+CommonJS and ES Modules are the two main module systems in Node.js. CommonJS uses require and module.exports, it’s synchronous and has historically been the default in Node.js. 
+ES Modules use import and export, they’re asynchronous, support static analysis, and align with the modern JavaScript standard used in browsers.
+
+I’d use CommonJS in legacy Node.js projects or when working with older packages that don’t support ESM. But for new projects, I’d prefer ES Modules since they’re future-proof, 
+support tree-shaking, and make the code consistent between frontend and backend.
+
+..............................................................................
+
+6. What is CORS, and how do you enable it in an Express.js application?
+
+CORS (Cross-Origin Resource Sharing) is a mechanism that allows a server to specify which origins (domains, ports, or protocols) are permitted to access its resources.
+By default, browsers block requests made from one origin to another for security reasons.
+
+In Express.js, you can enable CORS using the cors middleware:
+
+const express = require("express");
+const cors = require("cors");
+const app = express();
+
+// Enable CORS for all routes
+app.use(cors());
+
+// Or enable CORS for specific origin
+app.use(cors({ origin: "http://example.com" }));
+
+app.listen(3000, () => console.log("Server running on port 3000"));
+
+In short: CORS helps with cross-domain requests, and in Express, it’s usually enabled via the cors npm package.
+
+......................................................................................................
+
+7. How do you serve static files (e.g., HTML, CSS, JavaScript) using Express.js?
+
+Answer:
+Express provides a built-in middleware express.static() to serve static assets like HTML, CSS, JS, images, etc.
+
+Example:
+
+const express = require("express");
+const path = require("path");
+const app = express();
+
+// Serve static files from "public" folder
+app.use(express.static(path.join(__dirname, "public")));
+
+// Example: accessing http://localhost:3000/style.css
+app.listen(3000, () => console.log("Server running on port 3000"));
+
+..........................................................................................................
+
+8.What are common strategies for error handling in Node.js applications? Discuss try...catch, error-first callbacks, and event emitters.
+
+a. Error-First Callbacks (Traditional Node.js Pattern)
+
+In Node.js, many async functions follow the error-first callback style, where the first argument is an error (if any), and the second is the result.
+
+fs.readFile("data.txt", "utf8", (err, data) => {
+  if (err) {
+    console.error("Error reading file:", err);
+    return;
+  }
+  console.log("File data:", data);
+});
+
+Common in older Node.js APIs.
+Can get messy with deeply nested callbacks (callback hell).
+
+b. try...catch (for synchronous code & async/await)
+
+try...catch is used for synchronous code and works well with async/await.
+
+// Synchronous
+try {
+  const result = JSON.parse("{ bad json }");
+} catch (err) {
+  console.error("Parsing error:", err);
+}
+
+// Async/Await
+async function fetchData() {
+  try {
+    const response = await fetch("https://api.example.com/data");
+    const json = await response.json();
+    console.log(json);
+  } catch (err) {
+    console.error("API error:", err);
+  }
+}
+fetchData();
+
+ Cleaner, modern, and widely used in async workflows.
+ Does not catch errors in async callbacks unless wrapped.
+
+c. Event Emitters (for long-running processes)
+
+In Node.js, objects like streams, servers, and sockets emit "error" events that you must handle.
+
+const net = require("net");
+
+const server = net.createServer((socket) => {
+  socket.on("data", (data) => {
+    console.log("Received:", data.toString());
+  });
+});
+
+server.on("error", (err) => {
+  console.error("Server error:", err);
+});
+
+server.listen(3000);
+
+Useful for handling errors in asynchronous, event-driven systems.
+If you don’t handle "error" events, the process may crash.
+
+Summary :
+
+Error-first callbacks → traditional Node.js style (err, result), good for legacy APIs.
+try...catch → best with async/await, makes async code clean and readable.
+Event emitters → handle errors in event-driven or streaming operations (like servers, sockets, streams).
+In modern Node.js, I mostly use try...catch with async/await, but still need error-first callbacks for older APIs and event emitters for handling system-level errors.
+
+........................................................................................................
+
+9.Explain clustering and worker threads in Nodejs.
+
+Clustering in Node.js
+
+Node.js runs on a single thread by default. Clustering allows you to create multiple processes (workers) of your Node.js app, each running on a different CPU core, to handle concurrent requests.
+This is especially useful for web servers.
+
+Each worker is a separate Node.js process.
+Workers share the same server port.
+
+Pros
+Utilizes multi-core CPUs.
+Increases throughput for I/O-heavy apps.
+Workers are independent: a crash in one does not crash the main process.
+
+Cons
+Memory is not shared between workers (communication via IPC needed).
+Not suitable for CPU-intensive tasks within a single request (use worker threads for that).
+Managing state across workers can be tricky.
+
+When to Use
+Web servers (HTTP, REST APIs) needing high concurrency.
+I/O-heavy apps where each request is independent.
+
+How to Use
+
+const cluster = require('cluster');
+const http = require('http');
+const os = require('os');
+
+if (cluster.isMaster) {
+  const numCPUs = os.cpus().length;
+  console.log(`Master process is running with PID ${process.pid}`);
+
+  // Fork workers
+  for (let i = 0; i < numCPUs; i++) {
+    cluster.fork();
+  }
+
+  cluster.on('exit', (worker, code, signal) => {
+    console.log(`Worker ${worker.process.pid} died. Spawning a new one.`);
+    cluster.fork(); // Restart worker
+  });
+} else {
+  // Workers share the same port
+  http.createServer((req, res) => {
+    res.writeHead(200);
+    res.end(`Hello from worker ${process.pid}\n`);
+  }).listen(3000);
+
+  console.log(`Worker ${process.pid} started`);
+}
+
+Output:
+When you open localhost:3000, different requests can be served by different workers (different PIDs).
+
+
+Worker Threads in Node.js
+
+Worker Threads allow you to run CPU-intensive tasks in parallel threads inside the same Node.js process. Unlike clusters, worker threads share memory via SharedArrayBuffer.
+
+Ideal for heavy computations.
+Doesn’t improve I/O performance (Node.js is already async for I/O).
+
+Pros
+Handles CPU-intensive tasks without blocking the event loop.
+Can share memory between threads.
+Lighter than cluster (no need for multiple processes).
+
+Cons
+More complex than normal async programming.
+Shared memory access needs careful handling to avoid race conditions.
+Not meant for scaling web requests (use cluster for that).
+
+When to Use
+CPU-heavy tasks like image processing, cryptography, data processing.
+Tasks that block the event loop if run in the main thread.
+
+How to Use
+
+const { Worker, isMainThread, parentPort } = require('worker_threads');
+
+if (isMainThread) {
+  console.log('Main thread PID:', process.pid);
+
+  // Create a worker
+  const worker = new Worker(__filename);
+
+  worker.on('message', (msg) => {
+    console.log('Message from worker:', msg);
+  });
+
+  worker.on('exit', (code) => {
+    console.log('Worker exited with code', code);
+  });
+} else {
+  // Worker thread code
+  const computeHeavyTask = () => {
+    let sum = 0;
+    for (let i = 0; i < 1e8; i++) sum += i;
+    return sum;
+  };
+
+  const result = computeHeavyTask();
+  parentPort.postMessage(result);
+}
+
+
+Output:
+
+Main thread PID logs.
+Worker thread computes sum without blocking main thread.
+
+.......................................................................................................
+
+10.Discuss common performance bottlenecks in Node.js applications and strategies to optimize performance.
+
+a.Blocking the Event Loop
+Node.js is single-threaded for JavaScript execution.
+Long-running synchronous code (e.g., for loops with heavy computation, crypto, zlib) blocks other requests.
+
+Example:
+
+// BAD: blocks event loop
+app.get('/slow', (req, res) => {
+  let sum = 0;
+  for (let i = 0; i < 1e9; i++) sum += i;
+  res.send(sum.toString());
+});
+
+b. Poor Database Queries
+N+1 queries, missing indexes, or not batching queries.
+Overusing SELECT *.
+
+c. Inefficient Memory Usage
+
+Memory leaks from global variables, never-ending timers, or unbounded caching.
+Garbage Collection (GC) overhead if memory keeps growing.
+
+d. High Network Latency / Chatty APIs
+Multiple sequential external API/database calls.
+Lack of batching or parallelism.
+
+e. Inefficient Use of Asynchronous Features
+Callback hell or too many nested promises.
+Not using streams for large data (loading everything into memory at once).
+
+f. Improper Logging & Debugging
+Excessive console.log in production.
+Synchronous logging (e.g., writing to file directly).
+
+🚀 Strategies to Optimize Performance
+ a. Avoid Blocking the Event Loop
+Use Worker Threads or child processes for CPU-heavy tasks.
+Offload heavy work to queues (e.g., Bull, RabbitMQ, Kafka).
+Prefer async methods (e.g., fs.readFile vs fs.readFileSync).
+
+b. Optimize Database Access
+Use indexes on frequently queried columns.
+Batch queries with IN or JOINs instead of multiple calls.
+Implement caching (Redis, Memcached) for frequently read data.
+
+c. Use Clustering & Load Balancing
+Use Node.js Cluster module or PM2 to utilize all CPU cores.
+Place Node.js behind a reverse proxy (NGINX, HAProxy).
+
+d. Optimize Memory Usage
+Use streams for processing large files instead of reading them fully.
+Monitor memory leaks with tools like clinic.js, node --inspect, heapdump.
+Limit cache size (e.g., LRU cache).
+
+e. Efficient Asynchronous Patterns
+Use async/await for readability.
+Use Promise.all for parallel async tasks instead of sequential calls.
+
+f. Reduce Network Latency
+Implement API Gateway to batch requests.
+Use HTTP/2 for multiplexing.
+Use compression (compression middleware) and gzip responses.
+Enable Keep-Alive connections.
+
+g. Logging & Monitoring
+Use async logging libraries (Winston, Pino).
+Monitor event loop lag (event-loop-lag).
+Add APM tools (New Relic, Datadog, Elastic APM).
+
+summary:
+In Node.js, performance bottlenecks usually come from blocking the event loop, inefficient database queries, memory leaks, and sequential I/O operations.
+To optimize, we should offload CPU-intensive work to worker threads or queues, optimize DB queries with indexing and caching, use clustering to leverage multi-core CPUs, 
+implement async/await and Promise.all for parallel I/O, process large data with streams, and monitor the event loop lag using APM tools.
+
+...........................................................................
+
+10.Explain the concept of streams in Node.js and provide a practical use case.
+
+Streams in Node.js allow data to be processed piece by piece instead of all at once. 
+This makes them memory-efficient and ideal for large files or real-time data. 
+For example, instead of loading a 1GB file into memory, I can use fs.createReadStream().pipe(fs.createWriteStream()) to copy it in chunks.
+Streams also power features like file uploads, video streaming, and compression pipelines.
+
+Types of Streams
+Readable → data can be read (e.g., fs.createReadStream)
+Writable → data can be written (e.g., fs.createWriteStream)
+Duplex → both readable and writable (e.g., net.Socket)
+Transform → Duplex + can modify data (e.g., zlib.createGzip)
+
+Without Streams (Bad – loads entire file in memory)
+const fs = require('fs');
+
+fs.readFile('bigfile.txt', (err, data) => {
+  if (err) throw err;
+  fs.writeFile('copy.txt', data, () => console.log('File copied!'));
+});
+
+
+If bigfile.txt is 1GB, it tries to load all 1GB into memory.
+
+With Streams (Efficient – chunk by chunk)
+const fs = require('fs');
+
+const readable = fs.createReadStream('bigfile.txt');   // Read in chunks
+const writable = fs.createWriteStream('copy.txt');     // Write in chunks
+
+readable.pipe(writable);
+
+writable.on('finish', () => {
+  console.log('File copied using streams!');
+});
+
+
+✔ Uses constant memory regardless of file size.
+✔ Faster and scalable.
+
+ Another Use Case: Streaming Compression
+const fs = require('fs');
+const zlib = require('zlib');
+
+fs.createReadStream('bigfile.txt')
+  .pipe(zlib.createGzip())          // compress
+  .pipe(fs.createWriteStream('bigfile.txt.gz'));
+
+console.log('File compressed successfully!');
+
 
